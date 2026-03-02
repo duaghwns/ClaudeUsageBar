@@ -36,6 +36,7 @@ final class Settings {
         static let showSonnet = "show_sonnet"
         static let statusBarFormat = "status_bar_format"
         static let refreshInterval = "refresh_interval"
+        static let useColoredStatusBar = "use_colored_status_bar"
     }
 
     private init() {
@@ -47,6 +48,7 @@ final class Settings {
             Keys.showSonnet: true,
             Keys.statusBarFormat: StatusBarFormat.fiveHourAndWeekly.rawValue,
             Keys.refreshInterval: RefreshInterval.fiveMinutes.rawValue,
+            Keys.useColoredStatusBar: true,
         ])
     }
 
@@ -81,6 +83,11 @@ final class Settings {
     var statusBarFormat: StatusBarFormat {
         get { StatusBarFormat(rawValue: defaults.string(forKey: Keys.statusBarFormat) ?? "") ?? .fiveHourAndWeekly }
         set { defaults.set(newValue.rawValue, forKey: Keys.statusBarFormat); notifyChange() }
+    }
+
+    var useColoredStatusBar: Bool {
+        get { defaults.bool(forKey: Keys.useColoredStatusBar) }
+        set { defaults.set(newValue, forKey: Keys.useColoredStatusBar); notifyChange() }
     }
 
     var refreshInterval: RefreshInterval {

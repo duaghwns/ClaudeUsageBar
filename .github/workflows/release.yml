@@ -30,6 +30,9 @@ jobs:
             cp -R "$BUNDLE" "$APP/Contents/Resources/"
           fi
 
+          # Copy app icon
+          cp Resources/AppIcon.icns "$APP/Contents/Resources/"
+
           # Create Info.plist
           VERSION="${GITHUB_REF_NAME#v}"
           cat > "$APP/Contents/Info.plist" << PLIST
@@ -51,6 +54,8 @@ jobs:
             <string>ClaudeUsageBar</string>
             <key>CFBundlePackageType</key>
             <string>APPL</string>
+            <key>CFBundleIconFile</key>
+            <string>AppIcon</string>
             <key>LSMinimumSystemVersion</key>
             <string>13.0</string>
             <key>LSUIElement</key>

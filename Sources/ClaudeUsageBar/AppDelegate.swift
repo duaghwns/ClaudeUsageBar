@@ -121,22 +121,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, PopoverActions {
         return NSColor.systemGreen
     }
 
-    private func updateStatusBarTitle(text: String, fiveHour: Double? = nil) {
+    private func updateStatusBarTitle(text: String) {
         guard let button = statusItem.button else { return }
-
         button.image = nil
-
         let attributed = NSMutableAttributedString(string: text)
         let fullRange = NSRange(location: 0, length: attributed.length)
-
-        var color = NSColor.labelColor
-        if let pct = fiveHour {
-            color = colorForUtilization(pct)
-        }
-
-        attributed.addAttribute(.foregroundColor, value: color, range: fullRange)
+        attributed.addAttribute(.foregroundColor, value: NSColor.labelColor, range: fullRange)
         attributed.addAttribute(.font, value: NSFont.monospacedSystemFont(ofSize: 12, weight: .regular), range: fullRange)
         button.attributedTitle = attributed
+    }
+
+    private func updateStatusBarAttributed(_ attributed: NSMutableAttributedString) {
+        guard let button = statusItem.button else { return }
+        button.image = nil
+        button.attributedTitle = attributed
+    }
+
+    private func coloredString(_ text: String, pct: Double) -> NSMutableAttributedString {
+        let attr = NSMutableAttributedString(string: text)
+        let range = NSRange(location: 0, length: attr.length)
+        let color = settings.useColoredStatusBar ? colorForUtilization(pct) : NSColor.labelColor
+        attr.addAttribute(.foregroundColor, value: color, range: range)
+        attr.addAttribute(.font, value: NSFont.monospacedSystemFont(ofSize: 12, weight: .regular), range: range)
+        return attr
     }
 
     private func updateStatusBarText() {
@@ -144,18 +151,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, PopoverActions {
         let fiveHour = usage.fiveHour.utilization
         let weekly = usage.sevenDay.utilization
 
-        let text: String
+        let result: NSMutableAttributedString
         switch settings.statusBarFormat {
         case .fiveHourOnly:
-            text = String(format: "C:%.0f%%", fiveHour)
+            result = coloredString(String(format: "C:%.0f%%", fiveHour), pct: fiveHour)
         case .fiveHourAndWeekly:
-            text = String(format: "C:%.0f%%  W:%.0f%%", fiveHour, weekly)
+            let c = coloredString(String(format: "C:%.0f%%", fiveHour), pct: fiveHour)
+            let sep = coloredString("  ", pct: 0)
+            let w = coloredString(String(format: "W:%.0f%%", weekly), pct: weekly)
+            c.append(sep)
+            c.append(w)
+            result = c
         case .weeklyOnly:
-            text = String(format: "W:%.0f%%", weekly)
+            result = coloredString(String(format: "W:%.0f%%", weekly), pct: weekly)
         case .percentOnly:
-            text = String(format: "%.0f%%", fiveHour)
+            result = coloredString(String(format: "%.0f%%", fiveHour), pct: fiveHour)
         }
-        updateStatusBarTitle(text: text, fiveHour: fiveHour)
+        updateStatusBarAttributed(result)
     }
 
     // MARK: - Data Fetching

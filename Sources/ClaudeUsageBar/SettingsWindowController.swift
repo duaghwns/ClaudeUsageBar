@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 
 // Current app version — bump this on each release
-let kAppVersion = "1.0.0"
+let kAppVersion = "1.0.1"
 private let kGitHubRepo = "duaghwns/ClaudeUsageBar"
 
 class SettingsWindowController: NSObject, NSWindowDelegate {
@@ -213,6 +213,13 @@ class SettingsWindowController: NSObject, NSWindowDelegate {
             L10n.tr("settings.display.sonnet"),
             checked: settings.showSonnet,
             action: #selector(toggleSonnet(_:)),
+            in: container, y: y, width: width
+        )
+
+        y = addCheckbox(
+            L10n.tr("settings.display.coloredStatusBar"),
+            checked: settings.useColoredStatusBar,
+            action: #selector(toggleColoredStatusBar(_:)),
             in: container, y: y, width: width
         )
 
@@ -494,6 +501,10 @@ class SettingsWindowController: NSObject, NSWindowDelegate {
 
     @objc private func toggleSonnet(_ sender: NSButton) {
         settings.showSonnet = sender.state == .on
+    }
+
+    @objc private func toggleColoredStatusBar(_ sender: NSButton) {
+        settings.useColoredStatusBar = sender.state == .on
     }
 
     @objc private func statusBarFormatChanged(_ sender: NSButton) {
