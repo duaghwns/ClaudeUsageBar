@@ -15,33 +15,37 @@ C:42%  W:15%    ← 메뉴바 표시
 ## 기능
 
 ### 사용량 모니터링
-- 5시간 세션 사용률
-- 7일 주간 사용률
+- 현재 세션 사용률
+- 주간(7일) 사용률
 - Opus / Sonnet 모델별 사용률
 - 색상 표시: 초록(~79%) → 주황(80~94%) → 빨강(95%~)
+- 리셋 시간 표시
 
-### 계정 정보
-- 이름, 이메일, 플랜
+### 계정 정보 (설정 > 정보 탭)
+- 이름, 이메일, 조직
+- 플랜 (Pro / Max), 기본 모델
 - 로그인 방식, Claude Code 버전
+- 타임존, 지역 정보
 
-### 설정
-- 표시 항목 선택 (5시간, 주간, Opus, Sonnet)
-- 상태바 포맷 (C:%, W:%, 둘 다, 숫자만)
-- 새로고침 주기 (1분, 3분, 5분, 10분)
-- 부팅 시 실행
-- 언어 (한국어, English)
+### 설정 (탭 UI)
+- **정보**: 계정/플랜/모델/버전 정보 + 업데이트 확인
+- **표시**: 표시 항목 선택, 상태바 포맷 (C:%, W:%, 둘 다, 숫자만)
+- **일반**: 새로고침 주기 (1/3/5/10분), 언어 (한국어/English), 부팅 시 실행
 
 ---
 
 ## 요구사항
 
 - macOS 13+
-- Swift 5.9+
 - [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) 로그인 필요 (OAuth 토큰을 Keychain에서 읽음)
 
 ---
 
 ## 설치
+
+### DMG 다운로드
+
+[Releases](https://github.com/duaghwns/ClaudeUsageBar/releases) 페이지에서 최신 `ClaudeUsageBar-x.x.x.dmg`를 다운받아 Applications 폴더에 드래그하세요.
 
 ### Homebrew
 
@@ -56,20 +60,6 @@ brew install claude-usage-bar
 git clone https://github.com/duaghwns/ClaudeUsageBar.git
 cd ClaudeUsageBar
 swift build -c release
-```
-
-빌드된 실행 파일 경로:
-```
-.build/release/ClaudeUsageBar
-```
-
-### 실행
-
-```bash
-# 디버그
-swift run ClaudeUsageBar
-
-# 릴리즈
 .build/release/ClaudeUsageBar
 ```
 
@@ -108,33 +98,37 @@ C:42%  W:15%    ← Menu bar display
 ## Features
 
 ### Usage Monitoring
-- 5-hour session utilization
+- Current session utilization
 - 7-day weekly utilization
 - Per-model usage (Opus, Sonnet)
 - Color-coded progress bars: green (~79%) → orange (80~94%) → red (95%~)
+- Reset time display
 
-### Account Info
-- Name, email, plan
+### Account Info (Settings > Info tab)
+- Name, email, organization
+- Plan (Pro / Max), default model
 - Login method, Claude Code version
+- Timezone, region
 
-### Settings
-- Toggle display items (5-hour, weekly, Opus, Sonnet)
-- Status bar format (C:%, W:%, both, number only)
-- Refresh interval (1 / 3 / 5 / 10 min)
-- Launch at login
-- Language (Korean, English)
+### Settings (Tabbed UI)
+- **Info**: Account/plan/model/version info + check for updates
+- **Display**: Toggle display items, status bar format (C:%, W:%, both, number only)
+- **General**: Refresh interval (1/3/5/10 min), language (Korean/English), launch at login
 
 ---
 
 ## Requirements
 
 - macOS 13+
-- Swift 5.9+
 - [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) login required (reads OAuth token from Keychain)
 
 ---
 
 ## Installation
+
+### DMG Download
+
+Download the latest `ClaudeUsageBar-x.x.x.dmg` from the [Releases](https://github.com/duaghwns/ClaudeUsageBar/releases) page and drag it to your Applications folder.
 
 ### Homebrew
 
@@ -149,20 +143,6 @@ brew install claude-usage-bar
 git clone https://github.com/duaghwns/ClaudeUsageBar.git
 cd ClaudeUsageBar
 swift build -c release
-```
-
-Built executable:
-```
-.build/release/ClaudeUsageBar
-```
-
-### Run
-
-```bash
-# Debug
-swift run ClaudeUsageBar
-
-# Release
 .build/release/ClaudeUsageBar
 ```
 
