@@ -56,6 +56,94 @@ class FrostedView: NSView {
     }
 }
 
+// MARK: - Hover Card View
+
+class HoverCardView: NSView {
+    private let glowColor = NSColor(red: 0.45, green: 0.65, blue: 1.0, alpha: 1.0)
+    private var trackingArea: NSTrackingArea?
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        setup()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setup()
+    }
+
+    private func setup() {
+        wantsLayer = true
+        layer?.cornerRadius = 10
+        layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.06).cgColor
+        layer?.borderWidth = 1
+        layer?.borderColor = NSColor(white: 1.0, alpha: 0.10).cgColor
+        layer?.shadowColor = glowColor.cgColor
+        layer?.shadowRadius = 0
+        layer?.shadowOpacity = 0
+        layer?.shadowOffset = .zero
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let existing = trackingArea {
+            removeTrackingArea(existing)
+        }
+        trackingArea = NSTrackingArea(
+            rect: bounds,
+            options: [.mouseEnteredAndExited, .activeAlways],
+            owner: self, userInfo: nil
+        )
+        addTrackingArea(trackingArea!)
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        let borderAnim = CABasicAnimation(keyPath: "borderColor")
+        borderAnim.toValue = glowColor.withAlphaComponent(0.8).cgColor
+        borderAnim.duration = 0.25
+        borderAnim.fillMode = .forwards
+        borderAnim.isRemovedOnCompletion = false
+        layer?.add(borderAnim, forKey: "borderColor")
+
+        let shadowRadiusAnim = CABasicAnimation(keyPath: "shadowRadius")
+        shadowRadiusAnim.toValue = 15.0
+        shadowRadiusAnim.duration = 0.25
+        shadowRadiusAnim.fillMode = .forwards
+        shadowRadiusAnim.isRemovedOnCompletion = false
+        layer?.add(shadowRadiusAnim, forKey: "shadowRadius")
+
+        let shadowOpacityAnim = CABasicAnimation(keyPath: "shadowOpacity")
+        shadowOpacityAnim.toValue = 0.85
+        shadowOpacityAnim.duration = 0.25
+        shadowOpacityAnim.fillMode = .forwards
+        shadowOpacityAnim.isRemovedOnCompletion = false
+        layer?.add(shadowOpacityAnim, forKey: "shadowOpacity")
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        let borderAnim = CABasicAnimation(keyPath: "borderColor")
+        borderAnim.toValue = NSColor(white: 1.0, alpha: 0.10).cgColor
+        borderAnim.duration = 0.25
+        borderAnim.fillMode = .forwards
+        borderAnim.isRemovedOnCompletion = false
+        layer?.add(borderAnim, forKey: "borderColor")
+
+        let shadowRadiusAnim = CABasicAnimation(keyPath: "shadowRadius")
+        shadowRadiusAnim.toValue = 0.0
+        shadowRadiusAnim.duration = 0.25
+        shadowRadiusAnim.fillMode = .forwards
+        shadowRadiusAnim.isRemovedOnCompletion = false
+        layer?.add(shadowRadiusAnim, forKey: "shadowRadius")
+
+        let shadowOpacityAnim = CABasicAnimation(keyPath: "shadowOpacity")
+        shadowOpacityAnim.toValue = 0.0
+        shadowOpacityAnim.duration = 0.25
+        shadowOpacityAnim.fillMode = .forwards
+        shadowOpacityAnim.isRemovedOnCompletion = false
+        layer?.add(shadowOpacityAnim, forKey: "shadowOpacity")
+    }
+}
+
 // MARK: - Progress Bar View
 
 class ProgressBarView: NSView {
@@ -190,7 +278,7 @@ class PopoverViewController: NSViewController {
             }
 
             if settings.showSevenDay {
-                addSpacer(to: stack, height: 16)
+                addSpacer(to: stack, height: 8)
                 addUsageSection(
                     to: stack, width: innerWidth,
                     title: L10n.tr("usage.label.sevenDay"),
@@ -200,7 +288,7 @@ class PopoverViewController: NSViewController {
             }
 
             if settings.showOpus {
-                addSpacer(to: stack, height: 16)
+                addSpacer(to: stack, height: 8)
                 addUsageSection(
                     to: stack, width: innerWidth,
                     title: L10n.tr("usage.label.opus"),
@@ -210,7 +298,7 @@ class PopoverViewController: NSViewController {
             }
 
             if settings.showSonnet {
-                addSpacer(to: stack, height: 16)
+                addSpacer(to: stack, height: 8)
                 addUsageSection(
                     to: stack, width: innerWidth,
                     title: L10n.tr("usage.label.sonnet"),
@@ -292,7 +380,20 @@ class PopoverViewController: NSViewController {
 
     private func addUsageSection(to stack: NSStackView, width: CGFloat,
                                   title: String, utilization: Double, resetTime: String?) {
+        let cardPadding: CGFloat = 10
+        let cardInnerWidth = width - cardPadding * 2
         let barColor = colorForUtilization(utilization)
+
+        let card = HoverCardView()
+        card.translatesAutoresizingMaskIntoConstraints = false
+
+        let cardStack = NSStackView()
+        cardStack.orientation = .vertical
+        cardStack.alignment = .leading
+        cardStack.spacing = 4
+        cardStack.translatesAutoresizingMaskIntoConstraints = false
+        cardStack.edgeInsets = NSEdgeInsets(top: cardPadding, left: cardPadding,
+                                            bottom: cardPadding, right: cardPadding)
 
         // Row: icon + title + percentage
         let row = NSStackView()
@@ -315,27 +416,36 @@ class PopoverViewController: NSViewController {
         let pctLabel = makeLabel(String(format: "%.0f%%", utilization), size: 13, color: barColor, weight: .semibold)
         row.addArrangedSubview(pctLabel)
 
-        stack.addArrangedSubview(row)
-        row.widthAnchor.constraint(equalToConstant: width).isActive = true
+        cardStack.addArrangedSubview(row)
+        row.widthAnchor.constraint(equalToConstant: cardInnerWidth).isActive = true
 
         // Progress bar
-        addSpacer(to: stack, height: 4)
         let progressBar = ProgressBarView()
         progressBar.progress = utilization
         progressBar.barColor = barColor
         progressBar.translatesAutoresizingMaskIntoConstraints = false
-        stack.addArrangedSubview(progressBar)
+        cardStack.addArrangedSubview(progressBar)
         NSLayoutConstraint.activate([
-            progressBar.widthAnchor.constraint(equalToConstant: width),
+            progressBar.widthAnchor.constraint(equalToConstant: cardInnerWidth),
             progressBar.heightAnchor.constraint(equalToConstant: 8),
         ])
 
         // Reset time
         if let resetStr = resetTime {
-            addSpacer(to: stack, height: 2)
             let resetLabel = makeLabel(resetStr, size: 11, color: textDim)
-            stack.addArrangedSubview(resetLabel)
+            cardStack.addArrangedSubview(resetLabel)
         }
+
+        card.addSubview(cardStack)
+        NSLayoutConstraint.activate([
+            cardStack.topAnchor.constraint(equalTo: card.topAnchor),
+            cardStack.leadingAnchor.constraint(equalTo: card.leadingAnchor),
+            cardStack.trailingAnchor.constraint(equalTo: card.trailingAnchor),
+            cardStack.bottomAnchor.constraint(equalTo: card.bottomAnchor),
+        ])
+
+        stack.addArrangedSubview(card)
+        card.widthAnchor.constraint(equalToConstant: width).isActive = true
     }
 
     // MARK: - Login Checkbox

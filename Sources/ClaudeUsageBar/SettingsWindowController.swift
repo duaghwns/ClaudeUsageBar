@@ -2,10 +2,10 @@ import AppKit
 import Foundation
 
 // Current app version — bump this on each release
-let kAppVersion = "1.0.1"
+let kAppVersion = "1.0.2"
 private let kGitHubRepo = "duaghwns/ClaudeUsageBar"
 
-class SettingsWindowController: NSObject, NSWindowDelegate {
+class SettingsWindowController: NSObject, NSWindowDelegate, NSTabViewDelegate {
     private var window: NSWindow?
     private let settings = Settings.shared
     private var tabView: NSTabView?
@@ -22,12 +22,10 @@ class SettingsWindowController: NSObject, NSWindowDelegate {
         self.planInfo = planInfo
         self.version = version
         self.loginMethod = loginMethod
-        // Refresh info tab if window is visible
-        if let tabView = tabView, let infoItem = tabView.tabViewItems.first {
-            infoItem.view?.subviews.forEach { $0.removeFromSuperview() }
-            if let view = infoItem.view {
-                buildInfoContent(in: view)
-            }
+        if let tv = tabView,
+           let selectedId = tv.selectedTabViewItem?.identifier as? String,
+           selectedId == "info" {
+            resizeAndBuildTab("info", animate: false)
         }
     }
 
@@ -39,13 +37,12 @@ class SettingsWindowController: NSObject, NSWindowDelegate {
         }
 
         let w = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 360, height: 420),
+            contentRect: NSRect(x: 0, y: 0, width: 360, height: 400),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
         )
         w.title = L10n.tr("settings.windowTitle")
-        w.center()
         w.delegate = self
         w.isReleasedWhenClosed = false
         w.backgroundColor = .white
@@ -54,9 +51,12 @@ class SettingsWindowController: NSObject, NSWindowDelegate {
         contentView.autoresizingMask = [.width, .height]
         w.contentView = contentView
 
-        buildTabView(in: contentView)
-
         window = w
+
+        buildTabView(in: contentView)
+        // buildTabView triggers selectTabViewItem → delegate → resizeAndBuildTab
+
+        w.center()
         w.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
@@ -69,47 +69,88 @@ class SettingsWindowController: NSObject, NSWindowDelegate {
 
     // MARK: - Tab View Construction
 
+    private let contentTopMargin: CGFloat = 12
+    private let contentBottomMargin: CGFloat = 12
+
     private func buildTabView(in container: NSView) {
         let tv = NSTabView(frame: container.bounds)
         tv.autoresizingMask = [.width, .height]
         tv.tabViewType = .topTabsBezelBorder
+        tv.delegate = self
 
-        let infoTab = NSTabViewItem(identifier: "info")
-        infoTab.label = L10n.tr("settings.tab.info")
-        let infoView = NSView()
-        infoView.autoresizingMask = [.width, .height]
-        infoTab.view = infoView
-        tv.addTabViewItem(infoTab)
-
-        let displayTab = NSTabViewItem(identifier: "display")
-        displayTab.label = L10n.tr("settings.tab.display")
-        let displayView = NSView()
-        displayView.autoresizingMask = [.width, .height]
-        displayTab.view = displayView
-        tv.addTabViewItem(displayTab)
-
-        let generalTab = NSTabViewItem(identifier: "general")
-        generalTab.label = L10n.tr("settings.tab.general")
-        let generalView = NSView()
-        generalView.autoresizingMask = [.width, .height]
-        generalTab.view = generalView
-        tv.addTabViewItem(generalTab)
+        for (id, labelKey) in [("info", "settings.tab.info"),
+                                ("display", "settings.tab.display"),
+                                ("general", "settings.tab.general")] {
+            let tab = NSTabViewItem(identifier: id)
+            tab.label = L10n.tr(labelKey)
+            let view = NSView()
+            view.autoresizingMask = [.width, .height]
+            tab.view = view
+            tv.addTabViewItem(tab)
+        }
 
         container.addSubview(tv)
         tabView = tv
 
-        buildInfoContent(in: infoView)
-        buildDisplayContent(in: displayView)
-        buildGeneralContent(in: generalView)
-
         tv.selectTabViewItem(at: 0)
+    }
+
+    // MARK: - NSTabViewDelegate
+
+    func tabView(_ tabView: NSTabView, didSelect tabViewItem: NSTabViewItem?) {
+        guard let tabId = tabViewItem?.identifier as? String else { return }
+        resizeAndBuildTab(tabId)
+    }
+
+    // MARK: - Dynamic Tab Sizing
+
+    private func tabContentHeight(for tabId: String) -> CGFloat {
+        let content: CGFloat
+        switch tabId {
+        case "info":
+            // 9 rows×24 + 12 gap + 28 version row + 16 status label = 272
+            content = 272
+        case "display":
+            // header 30 + 5 checkboxes×26 + 8 gap + header 30 + 4 radios×26 = 302
+            content = 302
+        case "general":
+            // header 30 + 4 radios×26 + 8 + header 30 + 2 radios×26 + 8 + header 30 + 1 checkbox×26 = 288
+            content = 288
+        default:
+            content = 300
+        }
+        return contentTopMargin + content + contentBottomMargin
+    }
+
+    private func resizeAndBuildTab(_ tabId: String, animate: Bool = true) {
+        guard let window = window, let tv = tabView else { return }
+
+        let neededHeight = tabContentHeight(for: tabId)
+        let chrome = window.frame.height - tv.contentRect.height
+        let newWindowHeight = chrome + neededHeight
+
+        var frame = window.frame
+        frame.origin.y += frame.size.height - newWindowHeight
+        frame.size.height = newWindowHeight
+        window.setFrame(frame, display: true, animate: animate && window.isVisible)
+
+        for item in tv.tabViewItems {
+            guard (item.identifier as? String) == tabId, let view = item.view else { continue }
+            view.subviews.forEach { $0.removeFromSuperview() }
+            switch tabId {
+            case "info": buildInfoContent(in: view)
+            case "display": buildDisplayContent(in: view)
+            case "general": buildGeneralContent(in: view)
+            default: break
+            }
+        }
     }
 
     // MARK: - Info Tab
 
     private func buildInfoContent(in container: NSView) {
         let width = container.bounds.width > 0 ? container.bounds.width : 330
-        var y: CGFloat = 350
+        var y = container.bounds.height - contentTopMargin
 
         // Name
         let nameValue = profile?.account?.displayName ?? profile?.account?.fullName ?? L10n.tr("settings.info.noData")
@@ -187,7 +228,7 @@ class SettingsWindowController: NSObject, NSWindowDelegate {
 
     private func buildDisplayContent(in container: NSView) {
         let width = container.bounds.width > 0 ? container.bounds.width : 330
-        var y: CGFloat = 310
+        var y = container.bounds.height - contentTopMargin
 
         y = addSectionHeader(L10n.tr("settings.display"), in: container, y: y, width: width)
 
@@ -248,7 +289,7 @@ class SettingsWindowController: NSObject, NSWindowDelegate {
 
     private func buildGeneralContent(in container: NSView) {
         let width = container.bounds.width > 0 ? container.bounds.width : 330
-        var y: CGFloat = 310
+        var y = container.bounds.height - contentTopMargin
 
         y = addSectionHeader(L10n.tr("settings.refreshInterval"), in: container, y: y, width: width)
 
@@ -364,21 +405,15 @@ class SettingsWindowController: NSObject, NSWindowDelegate {
 
         for item in tv.tabViewItems {
             switch item.identifier as? String {
-            case "info":
-                item.label = L10n.tr("settings.tab.info")
-                item.view?.subviews.forEach { $0.removeFromSuperview() }
-                if let view = item.view { buildInfoContent(in: view) }
-            case "display":
-                item.label = L10n.tr("settings.tab.display")
-                item.view?.subviews.forEach { $0.removeFromSuperview() }
-                if let view = item.view { buildDisplayContent(in: view) }
-            case "general":
-                item.label = L10n.tr("settings.tab.general")
-                item.view?.subviews.forEach { $0.removeFromSuperview() }
-                if let view = item.view { buildGeneralContent(in: view) }
-            default:
-                break
+            case "info": item.label = L10n.tr("settings.tab.info")
+            case "display": item.label = L10n.tr("settings.tab.display")
+            case "general": item.label = L10n.tr("settings.tab.general")
+            default: break
             }
+        }
+
+        if let currentTabId = tv.selectedTabViewItem?.identifier as? String {
+            resizeAndBuildTab(currentTabId, animate: false)
         }
     }
 
