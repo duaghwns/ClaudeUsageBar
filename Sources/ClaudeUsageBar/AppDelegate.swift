@@ -6,6 +6,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, PopoverActions {
     private var popover: NSPopover!
     private var popoverVC: PopoverViewController!
     private var refreshTimer: Timer?
+    private var globalClickMonitor: Any?
     private let api = UsageAPI()
 
     private var lastUsage: UsageResponse?
@@ -58,13 +59,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, PopoverActions {
 
     @objc private func statusBarClicked() {
         if popover.isShown {
-            popover.performClose(nil)
+            closePopover()
         } else {
             refresh()
             updatePopover()
             if let button = statusItem.button {
                 popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             }
+            globalClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+                self?.closePopover()
+            }
+        }
+    }
+
+    private func closePopover() {
+        popover.performClose(nil)
+        if let monitor = globalClickMonitor {
+            NSEvent.removeMonitor(monitor)
+            globalClickMonitor = nil
         }
     }
 

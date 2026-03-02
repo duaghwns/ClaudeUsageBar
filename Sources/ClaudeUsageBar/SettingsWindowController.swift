@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 
 // Current app version — bump this on each release
-let kAppVersion = "1.0.2"
+let kAppVersion = "1.0.3"
 private let kGitHubRepo = "duaghwns/ClaudeUsageBar"
 
 class SettingsWindowController: NSObject, NSWindowDelegate, NSTabViewDelegate {
@@ -440,6 +440,7 @@ class SettingsWindowController: NSObject, NSWindowDelegate, NSTabViewDelegate {
                         if alert.runModal() == .alertFirstButtonReturn {
                             if let url = downloadURL {
                                 NSWorkspace.shared.open(url)
+                                NSApplication.shared.terminate(nil)
                             }
                         }
                     } else {
