@@ -1,0 +1,82 @@
+name: Build & Release DMG
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-dmg:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build release binary
+        run: swift build -c release
+
+      - name: Create .app bundle
+        run: |
+          APP="ClaudeUsageBar.app"
+          mkdir -p "$APP/Contents/MacOS"
+          mkdir -p "$APP/Contents/Resources"
+
+          cp .build/release/ClaudeUsageBar "$APP/Contents/MacOS/"
+
+          # Copy resource bundle if exists
+          BUNDLE=$(find .build/release -name "ClaudeUsageBar_ClaudeUsageBar.bundle" -maxdepth 1 | head -1)
+          if [ -n "$BUNDLE" ]; then
+            cp -R "$BUNDLE" "$APP/Contents/Resources/"
+          fi
+
+          # Create Info.plist
+          VERSION="${GITHUB_REF_NAME#v}"
+          cat > "$APP/Contents/Info.plist" << PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key>
+            <string>ClaudeUsageBar</string>
+            <key>CFBundleDisplayName</key>
+            <string>ClaudeUsageBar</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.duaghwns.ClaudeUsageBar</string>
+            <key>CFBundleVersion</key>
+            <string>${VERSION}</string>
+            <key>CFBundleShortVersionString</key>
+            <string>${VERSION}</string>
+            <key>CFBundleExecutable</key>
+            <string>ClaudeUsageBar</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>LSMinimumSystemVersion</key>
+            <string>13.0</string>
+            <key>LSUIElement</key>
+            <true/>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+          </dict>
+          </plist>
+          PLIST
+
+      - name: Create DMG
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          DMG_NAME="ClaudeUsageBar-${VERSION}.dmg"
+          DMG_DIR="dmg-contents"
+
+          mkdir -p "$DMG_DIR"
+          cp -R ClaudeUsageBar.app "$DMG_DIR/"
+          ln -s /Applications "$DMG_DIR/Applications"
+
+          hdiutil create -volname "ClaudeUsageBar" \
+            -srcfolder "$DMG_DIR" \
+            -ov -format UDZO \
+            "$DMG_NAME"
+
+          echo "DMG_NAME=$DMG_NAME" >> $GITHUB_ENV
+
+      - name: Upload DMG to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "$GITHUB_REF_NAME" "$DMG_NAME" --clobber
