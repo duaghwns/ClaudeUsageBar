@@ -101,6 +101,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, PopoverActions {
 
     func popoverDidRequestSettings() {
         popover.performClose(nil)
+        settingsWindowController.updateInfo(
+            profile: lastProfile,
+            planInfo: lastPlanInfo,
+            version: cachedVersion,
+            loginMethod: cachedLoginMethod
+        )
         settingsWindowController.showWindow()
     }
 
