@@ -6,6 +6,8 @@ macOS 메뉴바에서 Claude API 사용량을 실시간으로 모니터링하는
 
 ## 스크린샷
 
+<img width="360" height="480" alt="스크린샷 2026-03-02 16 19 17" src="https://github.com/user-attachments/assets/1bdf93a5-961a-4a7b-a8a5-991504a44c75" />
+
 ```
 C:42%  W:15%    ← 메뉴바 표시
 ```
