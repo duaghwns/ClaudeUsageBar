@@ -72,6 +72,9 @@ fi
 cp -R "$APP" "$INSTALL_DIR/"
 rm -rf "$APP"
 
+# Remove quarantine attribute to avoid Gatekeeper warning (app is not notarized)
+xattr -cr "$INSTALL_DIR/$APP"
+
 echo ""
 echo "Done! $APP_NAME has been installed to $INSTALL_DIR."
 echo "You can launch it from Finder, Spotlight, or Launchpad."

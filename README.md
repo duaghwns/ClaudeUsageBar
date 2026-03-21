@@ -49,6 +49,11 @@ C:42%  W:15%    ← 메뉴바 표시
 
 [Releases](https://github.com/duaghwns/ClaudeUsageBar/releases) 페이지에서 최신 `ClaudeUsageBar-x.x.x.dmg`를 다운받아 Applications 폴더에 드래그하세요.
 
+> **Gatekeeper 경고가 나타나는 경우:** 이 앱은 Apple 공증(Notarization)이 되어있지 않아 첫 실행 시 경고가 나타날 수 있습니다. 터미널에서 아래 명령어를 실행하면 해결됩니다:
+> ```bash
+> xattr -cr /Applications/ClaudeUsageBar.app
+> ```
+
 ### Homebrew
 
 ```bash
@@ -132,6 +137,11 @@ C:42%  W:15%    ← Menu bar display
 ### DMG Download
 
 Download the latest `ClaudeUsageBar-x.x.x.dmg` from the [Releases](https://github.com/duaghwns/ClaudeUsageBar/releases) page and drag it to your Applications folder.
+
+> **If you see a Gatekeeper warning:** This app is not notarized by Apple, so macOS may show a warning on first launch. Run the following command in Terminal to fix it:
+> ```bash
+> xattr -cr /Applications/ClaudeUsageBar.app
+> ```
 
 ### Homebrew
 
