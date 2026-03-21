@@ -49,10 +49,7 @@ C:42%  W:15%    ← 메뉴바 표시
 
 [Releases](https://github.com/duaghwns/ClaudeUsageBar/releases) 페이지에서 최신 `ClaudeUsageBar-x.x.x.dmg`를 다운받아 Applications 폴더에 드래그하세요.
 
-> **Gatekeeper 경고가 나타나는 경우:** 이 앱은 Apple 공증(Notarization)이 되어있지 않아 첫 실행 시 경고가 나타날 수 있습니다. 터미널에서 아래 명령어를 실행하면 해결됩니다:
-> ```bash
-> xattr -cr /Applications/ClaudeUsageBar.app
-> ```
+> 앱은 Apple Developer ID로 서명 및 공증(Notarization)되어 있어 Gatekeeper 경고 없이 바로 실행됩니다.
 
 ### Homebrew
 
@@ -69,7 +66,7 @@ cd ClaudeUsageBar
 bash scripts/install.sh
 ```
 
-> `install.sh`는 릴리스 빌드, .app 번들 생성, ad-hoc 코드 서명, `/Applications` 설치를 자동으로 수행합니다.
+> `install.sh`는 릴리스 빌드, .app 번들 생성, Developer ID 서명, Apple 공증, `/Applications` 설치를 자동으로 수행합니다.
 
 ---
 
@@ -138,10 +135,7 @@ C:42%  W:15%    ← Menu bar display
 
 Download the latest `ClaudeUsageBar-x.x.x.dmg` from the [Releases](https://github.com/duaghwns/ClaudeUsageBar/releases) page and drag it to your Applications folder.
 
-> **If you see a Gatekeeper warning:** This app is not notarized by Apple, so macOS may show a warning on first launch. Run the following command in Terminal to fix it:
-> ```bash
-> xattr -cr /Applications/ClaudeUsageBar.app
-> ```
+> The app is signed and notarized with Apple Developer ID, so it launches without any Gatekeeper warnings.
 
 ### Homebrew
 
@@ -158,7 +152,7 @@ cd ClaudeUsageBar
 bash scripts/install.sh
 ```
 
-> `install.sh` handles release build, .app bundle creation, ad-hoc code signing, and installation to `/Applications`.
+> `install.sh` handles release build, .app bundle creation, Developer ID signing, Apple notarization, and installation to `/Applications`.
 
 ---
 
