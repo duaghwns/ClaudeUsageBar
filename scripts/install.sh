@@ -62,8 +62,17 @@ cat > "$APP/Contents/Info.plist" << PLIST
 </plist>
 PLIST
 
-# Ad-hoc code sign so macOS can persistently identify the app (Keychain "Always Allow")
-codesign --force --deep -s - "$APP"
+# Code sign with Developer ID
+SIGN_ID="Developer ID Application: Yeom hojoon (QGHGSXPLPW)"
+echo "Signing with: $SIGN_ID"
+codesign --force --deep --options runtime -s "$SIGN_ID" "$APP"
+
+# Notarize
+echo "Notarizing..."
+ditto -c -k --keepParent "$APP" "/tmp/$APP_NAME.zip"
+xcrun notarytool submit "/tmp/$APP_NAME.zip" --keychain-profile "ClaudeUsageBar" --wait
+xcrun stapler staple "$APP"
+rm -f "/tmp/$APP_NAME.zip"
 
 echo "Installing to $INSTALL_DIR..."
 if [ -d "$INSTALL_DIR/$APP" ]; then
@@ -71,9 +80,6 @@ if [ -d "$INSTALL_DIR/$APP" ]; then
 fi
 cp -R "$APP" "$INSTALL_DIR/"
 rm -rf "$APP"
-
-# Remove quarantine attribute to avoid Gatekeeper warning (app is not notarized)
-xattr -cr "$INSTALL_DIR/$APP"
 
 echo ""
 echo "Done! $APP_NAME has been installed to $INSTALL_DIR."
