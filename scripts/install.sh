@@ -62,6 +62,9 @@ cat > "$APP/Contents/Info.plist" << PLIST
 </plist>
 PLIST
 
+# Ad-hoc code sign so macOS can persistently identify the app (Keychain "Always Allow")
+codesign --force --deep -s - "$APP"
+
 echo "Installing to $INSTALL_DIR..."
 if [ -d "$INSTALL_DIR/$APP" ]; then
     rm -rf "$INSTALL_DIR/$APP"

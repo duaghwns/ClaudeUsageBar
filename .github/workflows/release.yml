@@ -66,6 +66,9 @@ jobs:
           </plist>
           PLIST
 
+      - name: Ad-hoc code sign
+        run: codesign --force --deep -s - ClaudeUsageBar.app
+
       - name: Create DMG
         run: |
           VERSION="${GITHUB_REF_NAME#v}"

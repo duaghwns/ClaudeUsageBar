@@ -61,9 +61,10 @@ brew install claude-usage-bar
 ```bash
 git clone https://github.com/duaghwns/ClaudeUsageBar.git
 cd ClaudeUsageBar
-swift build -c release
-.build/release/ClaudeUsageBar
+bash scripts/install.sh
 ```
+
+> `install.sh`는 릴리스 빌드, .app 번들 생성, ad-hoc 코드 서명, `/Applications` 설치를 자동으로 수행합니다.
 
 ---
 
@@ -144,9 +145,10 @@ brew install claude-usage-bar
 ```bash
 git clone https://github.com/duaghwns/ClaudeUsageBar.git
 cd ClaudeUsageBar
-swift build -c release
-.build/release/ClaudeUsageBar
+bash scripts/install.sh
 ```
+
+> `install.sh` handles release build, .app bundle creation, ad-hoc code signing, and installation to `/Applications`.
 
 ---
 

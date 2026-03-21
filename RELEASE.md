@@ -55,3 +55,4 @@ bash scripts/install.sh
 - 번들 ID: `com.duaghwns.ClaudeUsageBar`
 - GitHub 저장소: `duaghwns/ClaudeUsageBar`
 - DMG 빌드: `.github/workflows/release.yml` (release 이벤트 시 자동 실행)
+- 코드 서명: `install.sh` 및 `release.yml`에서 ad-hoc 서명 자동 적용 (`codesign --force --deep -s -`)
