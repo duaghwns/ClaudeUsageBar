@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 
 // Current app version — bump this on each release
-let kAppVersion = "1.0.3"
+let kAppVersion = "1.0.4"
 private let kGitHubRepo = "duaghwns/ClaudeUsageBar"
 
 class SettingsWindowController: NSObject, NSWindowDelegate, NSTabViewDelegate {
